@@ -1,0 +1,39 @@
+# .pyc files
+*.pyc
+
+# mac files
+*.DS_Store
+
+# dotx files
+*.dotx
+
+# doc files
+*.doc
+
+# tif files
+*.tif
+
+# swp files
+*.swp
+
+# mp4 files
+*.mp4
+
+# zip files
+*.zip
+
+# netcdf files
+*.nc
+
+# zipped files
+*.Z
+*.gz
+
+#ignore .jupyter chekpoints folder
+.ipynb_checkpoints/
+
+# all temp folders
+tmp/
+
+# csv files
+*.csv
