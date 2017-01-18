@@ -22,6 +22,8 @@ These data include location, windradii, pressure, max wind speed among others. H
 
 The required data can be freely downloaded by the corresponding listed sources. See Notebooks for more details. 
 
+It is assumed that Best Track data are available in the corresponding folder. The dataset used is the Allstorms.ibtracs_all.v03r09.csv and the complete 1 file per storm netcdf  [folder](ftp://eclipse.ncdc.noaa.gov/pub/ibtracs/v03r09/archive/ibtracs_v03r09_dataset_184210_201512.tar.gz)
+
 A number of Python modules are required. A complete list is available in a file named piplist.
 
 
