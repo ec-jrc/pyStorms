@@ -1,15 +1,26 @@
-Storm Surge estimation  software
+TROPICAL CYCLONE ANALYSIS
 ==============================
 
-This is a development project for utilizing DELFT3D open source code for considering storm surge. The purpose is to create, run and analyze a storm surge computation based on Python scripts and thus avoid the Matlab based GUI that deltares use. The procedure is outlined in Jupyter notebooks in order to have clarity and transparency.  
+This is a development project for using the Holland parametric model to produce wind and pressure profiles of Tropical Cyclones based on available data. 
 
 ## Getting Started
 
-A number of data are inclusive in the project folders but there are some required outside sources. The development is done in Linux environment. Some (maybe many) modifications need to be made for other platforms. 
+Tropical Cyclone (TC) attributes are estimated by corresponding operational agencies and centers around the world. For more info see the [INPUT.ipynb](./INPUT.ipynb) and [BestTrack.ipynb](./BestTrack.ipynb).
+
+These data include location, windradii, pressure, max wind speed among others. However, there are missing info that preclude us from The proposed workflow for estimating the wind field is the following 
+
+* From TC bulletins or Best Track create inpData file (see [Create inpData.ipynb](./Create inpData.ipynb))
+
+* Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb))
+
+* Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb))
+
+* Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb))
+
 
 ### Prerequisities
 
-DELFT3D needs to be compiled for your system. You can download it from http://oss.deltares.nl/web/delft3d/source-code. Follow the instruction therein.  
+The required data can be freely downloaded by the corresponding listed sources. See Notebooks for more details. 
 
 A number of Python modules are required. A complete list is available in a file named piplist.
 
@@ -25,10 +36,10 @@ No tests are available at the moment.
 
 ## Acknowledgments
 
-* A number of scripts have been used (some with some modifications) from https://sourceforge.net/projects/openearthtools/. 
+* All the people that teach me stuff.  
 
 ## License
-* Since a few scripts from OpenEarthTools have been used, the project is released under the corresponding GPL v3 license. 
+* The project is released under the GPL v3 license. 
 
   This library is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
