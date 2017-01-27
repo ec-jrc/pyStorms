@@ -9,20 +9,20 @@ Tropical Cyclone (TC) attributes are estimated by corresponding operational agen
 
 These data include location, windradii, pressure, max wind speed among others. However, there are missing info that preclude us from The proposed workflow for estimating the wind field is the following 
 
-* From TC bulletins or Best Track create inpData file (see [Create inpData.ipynb](./Create inpData.ipynb))
+* From TC bulletins or Best Track create inpData file (see [Create inpData.ipynb](./Create inpData.ipynb)).
 
-* Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb))
+* Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb)).
 
-* Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb))
+* Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb)).
 
-* Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb))
+* Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb)).
 
 
 ### Prerequisities
 
 The required data can be freely downloaded by the corresponding listed sources. See Notebooks for more details. 
 
-It is assumed that Best Track data are available in the corresponding folder. The dataset used is the Allstorms.ibtracs_all.v03r09.csv and the complete 1 file per storm netcdf folder [see here](https://www.ncdc.noaa.gov/ibtracs/index.php?name=ibtracs-data)
+It is assumed that Best Track data are available in the corresponding folder. The dataset used is the Allstorms.ibtracs_all.v03r09.csv and the complete 1 file per storm netcdf folder [see here](https://www.ncdc.noaa.gov/ibtracs/index.php?name=ibtracs-data).
 
 A number of Python modules are required. A complete list is available in a file named piplist.
 
