@@ -122,7 +122,7 @@ def mc(R,V,sinfi,lat,vmax0vt):
 
     # return
     var=[rmse,dp,b,rmax,k ,np.max(V),vmax1]
-    varn=['rmse','dp','b','rmax','k','np.max(V)','vmax1']
+    varn=['rmse','dph','b','rmaxh','k','np.max(V)','vmax1']
 
     mcdic={el:val for (el,val) in zip(varn,var)}
 
