@@ -7,15 +7,15 @@ This is a development project for using the Holland parametric model to produce 
 
 Tropical Cyclone (TC) attributes are estimated by corresponding operational agencies and centers around the world. For more info see the [INPUT.ipynb](./INPUT.ipynb) and [BestTrack.ipynb](./BestTrack.ipynb).
 
-These data include location, windradii, pressure, max wind speed among others. However, there are missing info that preclude us from The proposed workflow for estimating the wind field is the following 
+These data include location, windradii, pressure, max wind speed among others. However, there are missing info that preclude us from The proposed workflow consists of 4 steps : 
 
-* From TC bulletins or Best Track create inpData file (see [Create inpData.ipynb](./Create inpData.ipynb)).
+* Step 1 : From TC bulletins or Best Track create inpData file (see [INPUT.ipynb](./INPUT.ipynb), [Create inpData.ipynb](./Create inpData.ipynb), etc.).
 
-* Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb)).
+* Step 2 : Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb)).
 
-* Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb)).
+* Step 3 : Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb)).
 
-* Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb)).
+* Step 4 : Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb)).
 
 
 ### Prerequisities
