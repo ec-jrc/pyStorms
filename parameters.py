@@ -48,3 +48,4 @@ bmin=0.8 # minimum value of holland parameter b
 bmax=2.5  # maximum value of holland parameter b
 b0=1.2  # initial estimation of holland parameter b
 
+fk=0.92 # coefficient for going from 1m to 10m in velocities
