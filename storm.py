@@ -345,6 +345,14 @@ class Storm(object):
         
         hpar= pd.DataFrame(mcdic)
         
+        # clean the values if present
+        try:
+           dcols=[unicode(x) for x in varn]
+           self.data = self.data.drop(dcols,1)
+        except Exception as e:
+            print e
+            pass
+        
         for it in range(self.data.shape[0]):
    
             vmax=self.data.loc[it].vmax
@@ -376,14 +384,14 @@ class Storm(object):
             if R.size > 0 : 
                 rmc = mc(R,V,sinfi,lat,vmax0vt)
             else:
-                rmc = {el:'' for el in varn}
+                rmc = {el:np.nan for el in varn}
 
             df = pd.DataFrame(rmc,index=[it])
 
     
             hpar = hpar.append(df)
-        
-        
+            
+                
         self.data = pd.concat([self.data,hpar],axis=1)
         
     
@@ -399,6 +407,9 @@ class Storm(object):
     def uvp(self,buffer=10,ni=100,nj=100,dt=5):
         
         tc = self.data.set_index('t')
+        tc=tc.apply(pd.to_numeric) # convert to float
+        
+        tc=tc.dropna()
         
         #Define the big window
         minlon=tc.lon.min()-buffer
@@ -421,7 +432,6 @@ class Storm(object):
         for i in range(tc.shape[0]):
             bh,kh,dph,rmaxh,vtx,vty = tc.ix[i,['b','k','dp','rmax','vtrx','vtry']]
             zx,zy,pr=hvel2d(q1,q2,tc.lon[i],tc.lat[i],bh,kh,dph,rmaxh,vtx,vty)
-            print bh,kh,dph,rmaxh,vtx,vty
             ux.append(zx)
             uy.append(zy)
             pp.append(pr)
@@ -434,6 +444,8 @@ class Storm(object):
         self.u=ux
         self.v=ux
         self.p=pp
+        self.lons=lons
+        self.lats=lats
         
         
          
