@@ -6,7 +6,11 @@ from netCDF4 import Dataset
 import re
 import xml.etree.ElementTree as et 
 from xml.dom import minidom
+import feedparser
+import urllib
+import re
 
+from readxml import readxml
 from parameters import *
 from mc import mc
 from utils import *
@@ -27,14 +31,16 @@ class Storm(object):
     """
     def __init__(self, **kwargs):
         self.properties = kwargs.get('properties', {})
-        self.name = kwargs.get('name', None)
-        self.basin     = kwargs.get('basin', None)
-        self.year     = kwargs.get('year', None)
         
     
 #    def parse(self,url):
         
     def frombt(self):
+        
+        self.name = kwargs.get('name', None)
+        self.basin = kwargs.get('basin', None)
+        self.year = kwargs.get('year', None)
+        
         
         btfile = self.properties['btfile']
         btpath = self.properties['btpath']
@@ -448,4 +454,123 @@ class Storm(object):
         self.lats=lats
         
         
-         
+        
+    def parse(self,source):
+        
+        url=self.properties[source] # use the source's link in properties
+        
+        buls=feedparser.parse(url) # parse link
+        
+        # collect the summeries (one for each alert present in the webpage)
+        data=buls['entries']
+        txt=[]
+        bname=[]
+        for k in range(len(data)):
+            if 'tcw' in data[k].summary : 
+                bname.append(data[k].title_detail.value)
+                txt.append(data[k].summary)  
+                               
+        txt_ = ''.join(txt)    
+        
+        elp = [re.sub('<[^<]+>', "", elem) for elem in txt_.split('Tropical')] # we split the text to get the references for the alerts
+        
+        hurs = [elem.strip().split('\n')[0] for elem in elp] # the names of the TCs are...
+
+        hurs = [ elem.encode('utf8').replace('"', '') for elem in hurs] # get rid of unicode characters
+        
+        hurs = filter(None, hurs) #filter out empty space
+
+        elp = [re.sub('<[^<]+>', "", elem) for elem in txt_.split('href=')] # we now split differently to get the urls for the bulletins
+        
+        bul = [elem for elem in elp if 'tcw' in elem] # collect the urls 
+
+        bul_ =  [elem.strip().split()[0] for elem in bul]
+
+        bul_ = [ elem.encode('utf8').replace('"', '') for elem in bul_] # get rid of unicode characters
+        
+        self.name = [None] * len(hurs)
+        self.basin = [None] * len(hurs)
+        self.date = [None] * len(hurs)
+        self.data = [None] * len(hurs)
+        
+        m=0
+                
+        for (hur,link,bn) in zip(hurs,bul_,bname):
+            
+                        
+            try:
+                det = urllib.urlopen(link).read() # download and parse the bulletin file
+            except:
+                print 'No Bulletins'
+                
+            tstamp=det.split('\n')[2][:10]
+                
+            #select the first lines where all the info is (conviniently) stored
+            bdata =[line.strip() for line in det.splitlines() if ('T' is line.strip()[0]) & ('QD' in line.strip()[-2:])]
+            
+            bdata = [re.sub(' ',',',elem) for elem in bdata] # replace space with commas as delimiter
+            
+            bdata = [v.split(',') for v in bdata] #split to array 
+            
+            if bdata != [] : 
+                
+                df = pd.DataFrame(bdata) # create a dataframe
+            
+            #expand the dataFrame to include all possible values
+                if df.shape[1] < 43 : df = pd.concat([df,pd.DataFrame(columns=list(np.arange(df.shape[1],43)))])
+            
+            # drop the text columns [NE,QD,....]
+                for ref in ['NE','NW','SW','SE','QD']:
+                  df = df.loc[:, (df != [ref]).all(axis=0)]
+                 
+                df = df.set_index(df.columns[0]) # set time as index
+            
+                df.columns=np.arange(df.shape[1]) # rename the columns
+            
+            #move the values to appropiate place based on the wind radii in order to force [64,50,34].
+
+                for i in range(df.shape[0]):
+                  if df.iloc[i,3]=='R034' : 
+                    df.iloc[i,13:] = df.iloc[i,3:8].values
+                    df.iloc[i,3:8] = None
+                  elif df.iloc[i,3]=='R050' :
+                    df.iloc[i,8:] = df.iloc[i,3:13].values
+                    df.iloc[i,3:8] = None
+
+                df = df.drop(df.columns[[3,8,13]], axis=1) # drop text columns [R064,R050,R034]
+            
+                print df
+            
+            #set columns
+                df.columns=['lat','lon','vmax','64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']
+            
+                tidx = [np.float(elem[1:]) for elem in df.index.values] #convert time from string to float 
+            
+                df.index=tidx # set float time as index
+            
+                df = df.fillna(0) # replace None with zeros
+            
+            #create lambda functions for converting the lat lon notation to float
+                chlat = lambda x: '-'+x[:-1] if x[-1]=='S' else x[:-1]
+                chlon = lambda x: '-'+x[:-1] if x[-1]=='W' else x[:-1]
+            
+            # convert lat,lon to -180,180
+                df.lat = df.lat.map(chlat)
+                df.lon = df.lon.map(chlon)
+            
+                df[['lat','lon']] = df[['lat','lon']].apply(pd.to_numeric,downcast='float').divide(10) #convert to float and divide by 10
+            
+                df = df.apply(pd.to_numeric,downcast='float') #convert all values to float
+            
+            else:
+                
+                df= None
+            
+            self.name[m]=hur
+            self.date[m]=tstamp
+            self.basin[m]=bn
+            self.data[m]=df
+            
+            m=+1
+                    
+                    
