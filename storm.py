@@ -7,7 +7,7 @@ import re
 import xml.etree.ElementTree as et 
 from xml.dom import minidom
 import feedparser
-import urllib
+import urllib, urllib2
 import re
 
 from readxml import readxml
@@ -18,7 +18,15 @@ from utils import *
 radcols=['64ne', '64se', '64sw', '64nw', '50ne', '50se', '50sw', '50nw',
        '34ne', '34se', '34sw', '34nw']
        
-       
+atcf_header=['BASIN', 'CY', 'YYYYMMDDHH', 'TECHNUM/MIN', 'TECH', 'TAU', 'LatN/S', 'LonE/W', 'VMAX', 'MSLP', 'TY', 'RAD', 'WINDCODE', \
+'RAD1', 'RAD2', 'RAD3', 'RAD4', 'POUTER', 'ROUTER', 'RMW', 'GUSTS', 'EYE', 'SUBREGION', 'MAXSEAS', 'INITIALS', 'DIR', 'SPEED', 'STORMNAME', \
+'DEPTH', 'SEAS', 'SEASCODE', 'SEAS1', 'SEAS2', 'SEAS3', 'SEAS4', 'USERDEFINED', 'userdata']       
+
+
+rwcols=['RAD1', 'RAD2', 'RAD3', 'RAD4']
+
+wcols=['34ne', '34se', '34sw', '34nw','50ne', '50se', '50sw', '50nw','64ne', '64se', '64sw', '64nw']
+
 
 class Storm(object):
     """Create a storm object for analysing TC data
@@ -503,7 +511,7 @@ class Storm(object):
             except:
                 print 'No Bulletins'
                 
-            tstamp=det.split('\n')[2][:10]
+            tstamp=det.split('\n')[1][:10]
                 
             #select the first lines where all the info is (conviniently) stored
             bdata =[line.strip() for line in det.splitlines() if ('T' is line.strip()[0]) & ('QD' in line.strip()[-2:])]
@@ -572,5 +580,165 @@ class Storm(object):
             self.data[m]=df
             
             m=+1
-                    
-                    
+         
+         
+    def parse_atcf(self,url=None,filename=None):   
+        
+        if url  :             
+            
+           # parse url folder
+           response=urllib2.urlopen(url) 
+           ls=response.readlines()      
+           #clean up        
+           lp=[elem.strip().split('href=')  for elem in ls]
+           n=np.size(lp)  
+            
+           cname=[]
+           for i in range(n):
+                 try:
+                    cc=lp[i][1]
+                    cname.append(cc.split('"')[1])
+                 except:
+                    pass
+            
+           files=[x for x in cname if '.atcfunix' in x] # select the bulletins             
+            
+           
+        elif filename : # read specific file e.g. *.dat file
+        
+           files=[filename]   
+        
+        
+        ib=0
+         
+        self.name = [None] * len(files)
+        self.basin = [None] * len(files)
+        self.date = [None] * len(files)
+        self.data = [None] * len(files)
+        
+            
+        for ifile in files:
+               
+               try:
+               
+                   bul=urllib.urlopen(url+ifile).read()
+            
+                   data=pd.DataFrame(bul.split('\n'),columns=['one'])
+                         
+                   data = pd.DataFrame(data.one.str.split(',').tolist())
+                   
+                   data=data.iloc[:, :37]
+                   
+                   data.columns=atcf_header
+                   
+                   tstamp = ifile.split('.')[1]
+                  
+               except:
+               
+                   data=pd.read_csv(ifile, header=None, names=atcf_header, engine='python') #B-files
+               
+                   data=data.iloc[:, :37]
+                   
+                   tstamp = data.YYYYMMDDHH[0]
+                   
+                   
+                
+               # usually HWRF doen't give the strom name so we take it from the filename
+               if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile.split('.')[0][:].upper()
+               
+               data=data.dropna(subset=['LonE/W']) # drop NaN
+               
+               lon=data['LonE/W']
+               
+               lon = [np.float(x[:-1])/10. if x[-1]=='E' else -np.float(x[:-1])/10. for x in lon]
+               
+               lat=data['LatN/S']
+               
+               lat = [np.float(x[:-1])/10. if x[-1]=='N' else -np.float(x[:-1])/10. for x in lat]
+               
+               #Check if we cross International Date Line (IDL)
+               
+               sig=np.sign(lon)
+               sig1=sig[0]
+               m=sig != sig1
+               
+               if sum(m)>0:
+               # adjust the lon values going from -180:180
+                       if sig1 > 0:
+                               lon[lon < 0] += 360.
+                       elif sig1 < 0:
+                               lon[lon > 0] -= 360.
+
+               
+               
+               vmax = data['VMAX'] # 10 minute wind in Knots
+               
+               mslp = data['MSLP'] # Minimum sea level pressure, 850 - 1050 mb.
+               
+               penv = data['POUTER']     # pressure in millibars of the last closed isobar, 900 - 1050 mb.
+               
+               try:
+                       time = data['YYYYMMDDHH'].str.strip().apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
+               except:
+                       time = data['YYYYMMDDHH'].apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
+               
+               
+               rmw = data['RMW'] # in nautical miles
+               
+               wradii=pd.DataFrame({'34ne':np.zeros(data.shape[0]), '34se':np.zeros(data.shape[0]), '34sw':np.zeros(data.shape[0]), '34nw':np.zeros(data.shape[0]), \
+                       '50ne':np.zeros(data.shape[0]), '50se':np.zeros(data.shape[0]), '50sw':np.zeros(data.shape[0]), '50nw':np.zeros(data.shape[0]),'64ne':np.zeros(data.shape[0]), \
+                       '64se':np.zeros(data.shape[0]), '64sw':np.zeros(data.shape[0]), '64nw':np.zeros(data.shape[0])})
+               
+               data.loc[:,'RAD']=data.loc[:,'RAD'].astype(str).str.strip() # convert to text format and delete whitespace
+               
+               data.loc[:,'WINDCODE'] = data.loc[:,'WINDCODE'].str.strip() # convert to text format and delete whitespace
+               
+               #constract the wind radii matrix
+               
+               for i in range(data.shape[0]):
+                   if data.WINDCODE.iloc[i] == 'NEQ' :
+                       rcols = [s for s in wradii.columns.values.astype(str) if data.RAD.iloc[i] in s]
+                       wradii.ix[i,rcols] = data.ix[i,rwcols].values
+                       
+               wradii = wradii.set_index(time)
+               
+               wradii = wradii.groupby(level=0).sum() # merge rows for same time 
+               
+               #create the inpData matrix 
+               
+               dic={'t':time, 'lat':lat,'lon':lon,'penv': penv, 'pcenter': mslp, 'vmax':vmax, 'rmax':rmw, 'hurName': data.STORMNAME} 
+               
+               inp=pd.DataFrame(dic)
+               
+               inp = inp.drop_duplicates()
+               
+               inp = inp.set_index('t')
+               
+               inpData = pd.concat([inp,wradii], axis=1)
+               
+               inpData = inpData.dropna()
+               
+               inpData = inpData.apply(pd.to_numeric, errors='ignore')
+               
+               inpData.loc[inpData.penv == -99, 'penv'] = 1010
+               
+               dph = (inpData.penv - inpData.pcenter) * 100 # convert to KP??????
+               
+               inpData=inpData.assign(dp=dph)
+               
+               inpData['time']=inpData.index-inpData.index[0]   
+               
+               inpData['time']=inpData['time'] / pd.Timedelta('1 hour')
+               
+               inpData.reset_index(level=0, inplace=True)
+               
+               inpData=inpData.set_index('time')
+                                          
+               self.name[ib]=data.STORMNAME.mode()[0].strip()
+               self.date[ib]=tstamp
+               self.basin[ib]=data.BASIN[0]
+               self.data[ib]=inpData
+            
+               ib=+1
+         
+               
