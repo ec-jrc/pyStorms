@@ -46,7 +46,7 @@ test/
 /dist/
 
 # Build folder.
-/build/
+/build/*
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
