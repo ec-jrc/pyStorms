@@ -5,17 +5,17 @@ This is a development project for using the Holland parametric model to produce 
 
 ## Getting Started
 
-Tropical Cyclone (TC) attributes are estimated by corresponding operational agencies and centers around the world. For more info see the [INPUT.ipynb](./INPUT.ipynb) and [BestTrack.ipynb](./BestTrack.ipynb).
+Tropical Cyclone (TC) attributes are estimated by corresponding operational agencies and centers around the world. For more info see the [INPUT.ipynb](./Notebooks/INPUT.ipynb) and [BestTrack.ipynb](./Notebooks/BestTrack.ipynb).
 
 These data include location, windradii, pressure, max wind speed among others. However, there are missing info that preclude us from The proposed workflow consists of 4 steps : 
 
-* Step 1 : From TC bulletins or Best Track create inpData file (see [INPUT.ipynb](./INPUT.ipynb), [Create inpData.ipynb](./Create inpData.ipynb), etc.).
+* Step 1 : From TC bulletins or Best Track create inpData file (see [INPUT.ipynb](./Notebooks/INPUT.ipynb), [Create inpData.ipynb](./Notebooks/Create inpData.ipynb), etc.).
 
-* Step 2 : Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Subtract translational and Coriolis velocity.ipynb)).
+* Step 2 : Compute translational and Coriolis velocities in order to move to a stationary frame (see [Subtract translational and Coriolis velocity.ipynb](./Notebooks/Subtract translational and Coriolis velocity.ipynb)).
 
-* Step 3 : Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Estimate Holland Parameters.ipynb)).
+* Step 3 : Estimate the parameters of the Holland Model and save outData file (see [Estimate Holland Parameters.ipynb](./Notebooks/Estimate Holland Parameters.ipynb)).
 
-* Step 4 : Produce the wind and pressure profiles (see [Create Output.ipynb](./Output.ipynb)).
+* Step 4 : Produce the wind and pressure profiles (see [Create Output.ipynb](./Notebooks/Output.ipynb)).
 
 
 ### Prerequisities
