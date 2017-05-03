@@ -8,6 +8,6 @@ setup(name='Storms',
       url='https://github.com/brey/Storms',
       author='George Breyiannis',
       author_email='gbreyiannis@gmail.com',
-      license='MIT',
+      license='EUPL',
       packages=['Storms'],
       zip_safe=False)
