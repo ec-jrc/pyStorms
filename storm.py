@@ -10,7 +10,6 @@ import feedparser
 import urllib, urllib2
 import re
 
-from readxml import readxml
 from parameters import *
 from mc import mc
 from utils import *
