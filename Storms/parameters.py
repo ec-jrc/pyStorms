@@ -1,14 +1,8 @@
-
 # coding: utf-8
 
 # ## Definitions Module
 
-# In[1]:
-
 import numpy as np
-
-
-# In[ ]:
 
 # -------------------------------------------------------------------------
 # Const
@@ -28,8 +22,6 @@ tetaSE=315. #        "              South East
 
 maxR=500.e3  # maximum radius of TC [m] (500Km)
 
-
-# In[ ]:
 
 kmin=0  # low limit of parameter k (=xn-.5-> k=0-> x=0.5)
 kmax=0.25 # upper limit for k (->xn=.65)  WHY?

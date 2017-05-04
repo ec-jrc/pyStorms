@@ -1,0 +1,12 @@
+numpy
+datetime
+pandas
+glob
+netCDF4
+re
+xml
+feedparser
+urllib
+urllib2
+bs4
+math

@@ -8,7 +8,6 @@ import xml.etree.ElementTree as et
 from xml.dom import minidom
 import feedparser
 import urllib, urllib2
-import re
 
 from parameters import *
 from mc import mc
