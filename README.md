@@ -20,11 +20,9 @@ These data include location, windradii, pressure, max wind speed among others. H
 
 ### Prerequisities
 
-The required data can be freely downloaded by the corresponding listed sources. See Notebooks for more details. 
+The required data can be freely downloaded by the corresponding listed sources. See Notebooks and tests for more details. 
 
-It is assumed that Best Track data are available in the corresponding folder. The dataset used is the Allstorms.ibtracs_all.v03r09.csv and the complete 1 file per storm netcdf folder [see here](https://www.ncdc.noaa.gov/ibtracs/index.php?name=ibtracs-data).
-
-A number of Python modules are required. A complete list is available in a file named piplist.
+A number of Python modules are required. A complete list is available in the file named requirements.txt.
 
 
 ## Tests
@@ -41,15 +39,5 @@ No tests are available at the moment.
 * All the people that teach me stuff.  
 
 ## License
-* The project is released under the GPL v3 license. 
-
-  This library is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+* The project is released under the EUPL 1.1 license. 
 
