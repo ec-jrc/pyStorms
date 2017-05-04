@@ -10,3 +10,5 @@ urllib
 urllib2
 bs4
 math
+matplotib
+mplleaflet
