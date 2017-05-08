@@ -8,5 +8,5 @@ matplotlib
 mplleaflet
 ipywidgets
 bqplot
-IPython
+
 
