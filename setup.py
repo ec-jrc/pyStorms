@@ -27,20 +27,5 @@ setup(name='Storms',
           'Intended Audience :: Science/Research',
           'Topic :: Scientific/Engineering :: Atmospheric Science',
       ],
-      
-      install_requires=[
-                'numpy',
-                'datetime',
-                'pandas',
-                'glob',
-                'netCDF4',
-                're',
-                'xml',
-                'feedparser',
-                'urllib',
-                'urllib2',
-                'bs4',
-                'math'
-            ],
       include_package_data=True,
       zip_safe=False)
