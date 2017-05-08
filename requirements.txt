@@ -1,12 +1,7 @@
-numpy
 datetime
-pandas
 netCDF4
 feedparser
-bs4
-matplotlib
 mplleaflet
-ipywidgets
-bqplot
+
 
 
