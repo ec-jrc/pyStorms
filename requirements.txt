@@ -1,9 +1,7 @@
 numpy
 datetime
 pandas
-glob
 netCDF4
-re
 feedparser
 bs4
 matplotib

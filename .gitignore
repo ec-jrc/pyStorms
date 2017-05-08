@@ -34,7 +34,6 @@
 
 # all temp folders
 tmp/
-test/
 
 # csv files
 *.csv

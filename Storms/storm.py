@@ -633,16 +633,24 @@ class Storm(object):
                   
                except:
                
-                   data=pd.read_csv(ifile, header=None, names=atcf_header, engine='python') #B-files
-               
+                   try:
+                       data=pd.read_csv(ifile, header=None, engine='python') # HWRF
+                   except:
+                       data=pd.read_csv(ifile, header=None, names=atcf_header, engine='python') #B-files   
+                                   
                    data=data.iloc[:, :37]
+                   
+                   data.columns=atcf_header
                    
                    tstamp = data.YYYYMMDDHH[0]
                    
-                   
-                
+               ifile_name = ifile.split('/')[-1].split('.')[0][:].upper()  
                # usually HWRF doen't give the strom name so we take it from the filename
-               if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile.split('.')[0][:].upper()
+#               try:
+               if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile_name
+#               except:
+#                     print ifile.split('.')[0][:].upper()
+               
                
                data=data.dropna(subset=['LonE/W']) # drop NaN
                
