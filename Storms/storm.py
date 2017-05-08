@@ -28,12 +28,12 @@ wcols=['34ne', '34se', '34sw', '34nw','50ne', '50se', '50sw', '50nw','64ne', '64
 
 class Storm(object):
     """Create a storm object for analysing TC data
-    # Create an empty grid
-    grid = Grid()
-    # Load a grid from file
-    grid = Grid.fromfile('filename.grd')
-    # Write grid to file
-    Grid.write(grid,'filename.grd')
+    # Create an empty object
+    o = Storm()
+    # Parse a bulletin
+    b = o.parse('filename.grd')
+    # Write data to file
+    o.write('filename')
     """
     def __init__(self, **kwargs):
         self.properties = kwargs.get('properties', {})
