@@ -163,67 +163,6 @@ class Storm(object):
         
         self.data = inpData
         
-    def toSI(self,path='.', pref=pn, output=False):
-      
-        dph=pref-self.data.pcenter*100. #compute dp from reference pressure
-        self.data=self.data.assign(dp=dph)  #add to DataFrame
-        
-        self.data['t']=pd.to_datetime(self.data['t'],format='%Y%m%d%H')
-        
-        self.data['time']=self.data['t']-self.data.t.iloc[0] # evaluate dt from t=0
-        
-        self.data['time']=self.data['time'] / pd.Timedelta('1 hour') # convert to hours difference
-        
-        
-        # convert to SI
-        self.data['vmax']=self.data['vmax']*kt2ms 
-        
-        self.data[['64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']]=\
-                self.data[['64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']]*nm2m
-          
-        #set inpData file        
-        column_order=['lat','lon','dp','vmax','64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']        
-        
-        header=['lat','long','dp','vmax','64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']
-        
-        if output:
-              self.data=self.data.set_index('time') # set index
-              self.data.to_csv(path+'/inpData.txt',index=True, columns=column_order, sep='\t', header=header) # save inpData file
-              self.data=self.data.reset_index() # reset index
-              
-        
-        #set bulInfo file        
-        tt=pd.to_datetime(self.data['t'][0])
-        
-        tt=datetime.datetime.strftime(tt,'%d %b %Y %H:%M:%S')
-        
-        dic0={'advNo':[1],'tShift':[0],'$date':tt,'land':[1],'notes':[0]}
-        
-        bul=pd.DataFrame.from_dict(dic0)
-        
-        if output:        
-              bul.to_csv(path+'/bulInfo.txt',index=False, columns=['advNo','tShift','$date','land','notes'], sep='\t')  
-        
-        #set info.xml file
-        info = et.Element('setexp')
-        et.SubElement(info, 'source').text = 'Tropical Cyclone Bulletin through GDACS/PDC'
-        et.SubElement(info, 'hurName').text = self.name
-        et.SubElement(info, 'hurId').text = self.name
-        et.SubElement(info, 'basin').text = self.basin
-        et.SubElement(info, 'bulNo').text = '1'
-        et.SubElement(info, 'bulDate').text = tt
-        et.SubElement(info, 'n').text = '100000'
-        et.SubElement(info, 'fk').text = '0.81'
-        et.SubElement(info, 'stormsurge').text = '0'
-        et.SubElement(info, 'timefactor').text = '1'
-        et.SubElement(info, 'landfall').text = '1'     
-        
-        xmlf = minidom.parseString(prettify(info))
-        
-        if output:
-           with open(path+'/info.xml','w') as f:
-              xmlf.writexml(f) 
-    
       
     def tranvel(self):
         
@@ -459,12 +398,90 @@ class Storm(object):
         self.lons=lons
         self.lats=lats
         
+         
+          
+         
+class Data(object):
+    
+    def __init__(self, **kwargs):
+        self.properties = kwargs.get('properties', {})
+        self.values = None
+    
+    def toSI(self,path='.', pref=pn, output=False):
+      
+        dph=pref-self.values.pcenter*100. #compute dp from reference pressure
+        self.values=self.values.assign(dp=dph)  #add to DataFrame
+        
+        self.values['t']=pd.to_datetime(self.values['t'],format='%Y%m%d%H')
+        
+        self.values['time']=self.values['t']-self.values.t.iloc[0] # evaluate dt from t=0
+        
+        self.values['time']=self.values['time'] / pd.Timedelta('1 hour') # convert to hours difference
         
         
-    def parse(self,source):
+        # convert to SI
+        self.values['vmax']=self.values['vmax']*kt2ms 
         
-        url=self.properties[source] # use the source's link in properties
+        self.values[['64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']]=\
+                self.values[['64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']]*nm2m
         
+        
+    def output(self,path=None):
+        
+        self.values=self.values.set_index('time') # set index
+        self.values.to_csv(path+'/inpData.txt',index=True, columns=column_order, sep='\t', header=header) # save inpData file
+        self.values=self.values.reset_index() # reset index
+        
+        #set inpData file        
+        column_order=['lat','lon','dp','vmax','64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']        
+        
+        header=['lat','long','dp','vmax','64ne','64se','64sw','64nw','50ne','50se','50sw','50nw','34ne','34se','34sw','34nw']
+                
+        
+        #set bulInfo file        
+        tt=pd.to_datetime(self.values['t'][0])
+        
+        tt=datetime.datetime.strftime(tt,'%d %b %Y %H:%M:%S')
+        
+        dic0={'advNo':[1],'tShift':[0],'$date':tt,'land':[1],'notes':[0]}
+        
+        bul=pd.DataFrame.from_dict(dic0)
+        
+        bul.to_csv(path+'/bulInfo.txt',index=False, columns=['advNo','tShift','$date','land','notes'], sep='\t')  
+        
+        #set info.xml file
+        info = et.Element('setexp')
+        et.SubElement(info, 'source').text = 'Tropical Cyclone Bulletin through GDACS/PDC'
+        et.SubElement(info, 'hurName').text = self.name
+        et.SubElement(info, 'hurId').text = self.name
+        et.SubElement(info, 'basin').text = self.basin
+        et.SubElement(info, 'bulNo').text = '1'
+        et.SubElement(info, 'bulDate').text = tt
+        et.SubElement(info, 'n').text = '100000'
+        et.SubElement(info, 'fk').text = '0.81'
+        et.SubElement(info, 'stormsurge').text = '0'
+        et.SubElement(info, 'timefactor').text = '1'
+        et.SubElement(info, 'landfall').text = '1'     
+        
+        xmlf = minidom.parseString(prettify(info))
+        
+        with open(path+'/info.xml','w') as f:
+              xmlf.writexml(f) 
+          
+class Source:
+    def __init__(self,path):
+        self.path=path
+        
+    def parse(self):
+        raise NotImplementedError("Subclass must implement abstract method")    
+           
+        
+class JTWC(Source):
+    
+    def parse(self):
+        
+        url=self.path # use the source's link in properties
+                
         buls=feedparser.parse(url) # parse link
         
         # collect the summeries (one for each alert present in the webpage)
@@ -498,12 +515,20 @@ class Storm(object):
         self.basin = [None] * len(hurs)
         self.date = [None] * len(hurs)
         self.data = [None] * len(hurs)
-        
+        self.link = [None] * len(hurs)
+                
         m=0
                 
         for (hur,link,bn) in zip(hurs,bul_,bname):
             
-                        
+            self.name[m] = hur
+            self.link[m] = link
+            self.basin[m] = bn
+            
+            m=+1
+
+    def read(self):
+                            
             try:
                 det = urllib.urlopen(link).read() # download and parse the bulletin file
             except:
@@ -579,96 +604,89 @@ class Storm(object):
             
             m=+1
          
-         
-    def parse_atcf(self,url=None,filename=None):   
+class HWRF(Source):
+    
+    def parse(self):   
         
-        if url  :             
+        url = self.path      
             
-           # parse url folder
-           response=urllib2.urlopen(url) 
-           ls=response.readlines()      
-           #clean up        
-           lp=[elem.strip().split('href=')  for elem in ls]
-           n=np.size(lp)  
+        # parse url folder
+        response=urllib2.urlopen(url) 
+        ls=response.readlines()      
+        #clean up        
+        lp=[elem.strip().split('href=')  for elem in ls]
+        n=np.size(lp)  
             
-           cname=[]
-           for i in range(n):
+        cname=[]
+        for i in range(n):
                  try:
                     cc=lp[i][1]
                     cname.append(cc.split('"')[1])
                  except:
                     pass
             
-           files=[x for x in cname if '.atcfunix' in x] # select the bulletins             
-            
-           
-        elif filename : # read specific file e.g. *.dat file
-        
-           files=[filename]   
-        
-        
-        ib=0
+        files=[x for x in cname if '.atcfunix' in x] # select the bulletins             
+
+        m=0
          
         self.name = [None] * len(files)
         self.basin = [None] * len(files)
+        self.link = [None] * len(files)
         self.date = [None] * len(files)
-        self.data = [None] * len(files)
-        
-            
+        self.data = Data() 
+                
         for ifile in files:
-               
-               try:
-               
-                   bul=urllib.urlopen(url+ifile).read()
+                
+                        
+           self.name[m] = ifile.split('/')[-1].split('.')[0][:].upper() 
+           self.link[m] = url+ifile
+           self.date = ifile.split('.')[1]
+        
+           m=+1
+                        
+    def read(self):                    
+                        
+           
+            ifile=self.link
             
-                   data=pd.DataFrame(bul.split('\n'),columns=['one'])
-                         
-                   data = pd.DataFrame(data.one.str.split(',').tolist())
-                   
-                   data=data.iloc[:, :37]
-                   
-                   data.columns=atcf_header
-                   
-                   tstamp = ifile.split('.')[1]
-                  
-               except:
                
-                   try:
-                       data=pd.read_csv(ifile, header=None, engine='python') # HWRF
-                   except:
-                       data=pd.read_csv(ifile, header=None, names=atcf_header, engine='python') #B-files   
-                                   
-                   data=data.iloc[:, :37]
+            bul=urllib.urlopen(url+ifile).read()
+            
+            data=pd.DataFrame(bul.split('\n'),columns=['one'])
+                         
+            data = pd.DataFrame(data.one.str.split(',').tolist())
                    
-                   data.columns=atcf_header
+            data=data.iloc[:, :37]
                    
-                   tstamp = data.YYYYMMDDHH[0]
+            data.columns=atcf_header
                    
-               ifile_name = ifile.split('/')[-1].split('.')[0][:].upper()  
+            tstamp = ifile.split('.')[1]
+                  
+            ifile_name = ifile.split('/')[-1].split('.')[0][:].upper()  
                # usually HWRF doen't give the strom name so we take it from the filename
 #               try:
-               if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile_name
+            if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile_name
 #               except:
 #                     print ifile.split('.')[0][:].upper()
                
                
-               data=data.dropna(subset=['LonE/W']) # drop NaN
+            data=data.dropna(subset=['LonE/W']) # drop NaN
                
-               lon=data['LonE/W']
+            lon=data['LonE/W']
                
-               lon = [np.float(x[:-1])/10. if x[-1]=='E' else -np.float(x[:-1])/10. for x in lon]
+            lon = [np.float(x[:-1])/10. if x[-1]=='E' else -np.float(x[:-1])/10. for x in lon]
                
-               lat=data['LatN/S']
+            lat=data['LatN/S']
                
-               lat = [np.float(x[:-1])/10. if x[-1]=='N' else -np.float(x[:-1])/10. for x in lat]
+            lat = [np.float(x[:-1])/10. if x[-1]=='N' else -np.float(x[:-1])/10. for x in lat]
                
-               #Check if we cross International Date Line (IDL)
+            #Check if we cross International Date Line (IDL)
                
-               sig=np.sign(lon)
-               sig1=sig[0]
-               m=sig != sig1
+            sig=np.sign(lon)
+            sig1=sig[0]
+            m=sig != sig1
                
-               if sum(m)>0:
+            if sum(m)>0:
                # adjust the lon values going from -180:180
                        if sig1 > 0:
                                lon[lon < 0] += 360.
@@ -677,74 +695,222 @@ class Storm(object):
 
                
                
-               vmax = data['VMAX'] # 10 minute wind in Knots
+            vmax = data['VMAX'] # 10 minute wind in Knots
                
-               mslp = data['MSLP'] # Minimum sea level pressure, 850 - 1050 mb.
+            mslp = data['MSLP'] # Minimum sea level pressure, 850 - 1050 mb.
                
-               penv = data['POUTER']     # pressure in millibars of the last closed isobar, 900 - 1050 mb.
+            penv = data['POUTER']     # pressure in millibars of the last closed isobar, 900 - 1050 mb.
                
-               try:
+            try:
                        time = data['YYYYMMDDHH'].str.strip().apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
-               except:
+            except:
                        time = data['YYYYMMDDHH'].apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
                
                
-               rmw = data['RMW'] # in nautical miles
+            rmw = data['RMW'] # in nautical miles
                
-               wradii=pd.DataFrame({'34ne':np.zeros(data.shape[0]), '34se':np.zeros(data.shape[0]), '34sw':np.zeros(data.shape[0]), '34nw':np.zeros(data.shape[0]), \
+            wradii=pd.DataFrame({'34ne':np.zeros(data.shape[0]), '34se':np.zeros(data.shape[0]), '34sw':np.zeros(data.shape[0]), '34nw':np.zeros(data.shape[0]), \
                        '50ne':np.zeros(data.shape[0]), '50se':np.zeros(data.shape[0]), '50sw':np.zeros(data.shape[0]), '50nw':np.zeros(data.shape[0]),'64ne':np.zeros(data.shape[0]), \
                        '64se':np.zeros(data.shape[0]), '64sw':np.zeros(data.shape[0]), '64nw':np.zeros(data.shape[0])})
                
-               data.loc[:,'RAD']=data.loc[:,'RAD'].astype(str).str.strip() # convert to text format and delete whitespace
+            data.loc[:,'RAD']=data.loc[:,'RAD'].astype(str).str.strip() # convert to text format and delete whitespace
                
-               data.loc[:,'WINDCODE'] = data.loc[:,'WINDCODE'].str.strip() # convert to text format and delete whitespace
+            data.loc[:,'WINDCODE'] = data.loc[:,'WINDCODE'].str.strip() # convert to text format and delete whitespace
                
-               #constract the wind radii matrix
+            #constract the wind radii matrix
                
-               for i in range(data.shape[0]):
+            for i in range(data.shape[0]):
                    if data.WINDCODE.iloc[i] == 'NEQ' :
                        rcols = [s for s in wradii.columns.values.astype(str) if data.RAD.iloc[i] in s]
                        wradii.ix[i,rcols] = data.ix[i,rwcols].values
                        
-               wradii = wradii.set_index(time)
+            wradii = wradii.set_index(time)
                
-               wradii = wradii.groupby(level=0).sum() # merge rows for same time 
+            wradii = wradii.groupby(level=0).sum() # merge rows for same time 
                
-               #create the inpData matrix 
+            #create the inpData matrix 
                
-               dic={'t':time, 'lat':lat,'lon':lon,'penv': penv, 'pcenter': mslp, 'vmax':vmax, 'rmax':rmw, 'hurName': data.STORMNAME} 
+            dic={'t':time, 'lat':lat,'lon':lon,'penv': penv, 'pcenter': mslp, 'vmax':vmax, 'rmax':rmw, 'hurName': data.STORMNAME} 
                
-               inp=pd.DataFrame(dic)
+            inp=pd.DataFrame(dic)
                
-               inp = inp.drop_duplicates()
+            inp = inp.drop_duplicates()
                
-               inp = inp.set_index('t')
+            inp = inp.set_index('t')
                
-               inpData = pd.concat([inp,wradii], axis=1)
+            inpData = pd.concat([inp,wradii], axis=1)
                
-               inpData = inpData.dropna()
+            inpData = inpData.dropna()
                
-               inpData = inpData.apply(pd.to_numeric, errors='ignore')
+            inpData = inpData.apply(pd.to_numeric, errors='ignore')
                
-               inpData.loc[inpData.penv == -99, 'penv'] = 1010
+            inpData.loc[inpData.penv == -99, 'penv'] = 1010
                
-               dph = (inpData.penv - inpData.pcenter) * 100 # convert to KP??????
+            dph = (inpData.penv - inpData.pcenter) * 100 # convert to KP??????
                
-               inpData=inpData.assign(dp=dph)
+            inpData=inpData.assign(dp=dph)
                
-               inpData['time']=inpData.index-inpData.index[0]   
+            inpData['time']=inpData.index-inpData.index[0]   
                
-               inpData['time']=inpData['time'] / pd.Timedelta('1 hour')
+            inpData['time']=inpData['time'] / pd.Timedelta('1 hour')
                
-               inpData.reset_index(level=0, inplace=True)
+            inpData.reset_index(level=0, inplace=True)
                
-               inpData=inpData.set_index('time')
+            inpData=inpData.set_index('time')
                                           
-               self.name[ib]=data.STORMNAME.mode()[0].strip()
-               self.date[ib]=tstamp
-               self.basin[ib]=data.BASIN[0]
-               self.data[ib]=inpData
+            self.name[ib]=data.STORMNAME.mode()[0].strip()
+            self.date[ib]=tstamp
+            self.basin[ib]=data.BASIN[0]
+            self.data.values=inpData
             
-               ib=+1
-         
+            ib=+1
+                     
                
+            
+class fromFile(Source):
+    
+    def parse(self):
+        
+        ifile=self.path   
+        
+        
+        ib=0
+         
+        self.name = None
+        self.basin = [None] * len(files)
+        self.date = [None] * len(files)
+        self.data = Data() 
+        
+            
+        for ifile in files:
+               
+                  try:
+               
+                      bul=urllib.urlopen(url+ifile).read()
+            
+                      data=pd.DataFrame(bul.split('\n'),columns=['one'])
+                         
+                      data = pd.DataFrame(data.one.str.split(',').tolist())
+                   
+                      data=data.iloc[:, :37]
+                   
+                      data.columns=atcf_header
+                   
+                      tstamp = ifile.split('.')[1]
+                  
+                  except:
+               
+                      try:
+                          data=pd.read_csv(ifile, header=None, engine='python') # HWRF
+                      except:
+                          data=pd.read_csv(ifile, header=None, names=atcf_header, engine='python') #B-files   
+                                   
+                      data=data.iloc[:, :37]
+                   
+                      data.columns=atcf_header
+                   
+                      tstamp = data.YYYYMMDDHH[0]
+                   
+                  ifile_name = ifile.split('/')[-1].split('.')[0][:].upper()  
+                  # usually HWRF doen't give the strom name so we take it from the filename
+   #               try:
+                  if data.STORMNAME.str.strip().all() == '' : data.STORMNAME = ifile_name
+   #               except:
+   #                     print ifile.split('.')[0][:].upper()
+               
+               
+                  data=data.dropna(subset=['LonE/W']) # drop NaN
+               
+                  lon=data['LonE/W']
+               
+                  lon = [np.float(x[:-1])/10. if x[-1]=='E' else -np.float(x[:-1])/10. for x in lon]
+               
+                  lat=data['LatN/S']
+               
+                  lat = [np.float(x[:-1])/10. if x[-1]=='N' else -np.float(x[:-1])/10. for x in lat]
+               
+                  #Check if we cross International Date Line (IDL)
+               
+                  sig=np.sign(lon)
+                  sig1=sig[0]
+                  m=sig != sig1
+               
+                  if sum(m)>0:
+                  # adjust the lon values going from -180:180
+                          if sig1 > 0:
+                                  lon[lon < 0] += 360.
+                          elif sig1 < 0:
+                                  lon[lon > 0] -= 360.
+
+               
+               
+                  vmax = data['VMAX'] # 10 minute wind in Knots
+               
+                  mslp = data['MSLP'] # Minimum sea level pressure, 850 - 1050 mb.
+               
+                  penv = data['POUTER']     # pressure in millibars of the last closed isobar, 900 - 1050 mb.
+               
+                  try:
+                          time = data['YYYYMMDDHH'].str.strip().apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
+                  except:
+                          time = data['YYYYMMDDHH'].apply(pd.to_datetime, format='%Y%m%d%H')+pd.to_timedelta(data['TAU'],'h') #hwrf
+               
+               
+                  rmw = data['RMW'] # in nautical miles
+               
+                  wradii=pd.DataFrame({'34ne':np.zeros(data.shape[0]), '34se':np.zeros(data.shape[0]), '34sw':np.zeros(data.shape[0]), '34nw':np.zeros(data.shape[0]), \
+                          '50ne':np.zeros(data.shape[0]), '50se':np.zeros(data.shape[0]), '50sw':np.zeros(data.shape[0]), '50nw':np.zeros(data.shape[0]),'64ne':np.zeros(data.shape[0]), \
+                          '64se':np.zeros(data.shape[0]), '64sw':np.zeros(data.shape[0]), '64nw':np.zeros(data.shape[0])})
+               
+                  data.loc[:,'RAD']=data.loc[:,'RAD'].astype(str).str.strip() # convert to text format and delete whitespace
+               
+                  data.loc[:,'WINDCODE'] = data.loc[:,'WINDCODE'].str.strip() # convert to text format and delete whitespace
+               
+                  #constract the wind radii matrix
+               
+                  for i in range(data.shape[0]):
+                      if data.WINDCODE.iloc[i] == 'NEQ' :
+                          rcols = [s for s in wradii.columns.values.astype(str) if data.RAD.iloc[i] in s]
+                          wradii.ix[i,rcols] = data.ix[i,rwcols].values
+                       
+                  wradii = wradii.set_index(time)
+               
+                  wradii = wradii.groupby(level=0).sum() # merge rows for same time 
+               
+                  #create the inpData matrix 
+               
+                  dic={'t':time, 'lat':lat,'lon':lon,'penv': penv, 'pcenter': mslp, 'vmax':vmax, 'rmax':rmw, 'hurName': data.STORMNAME} 
+               
+                  inp=pd.DataFrame(dic)
+               
+                  inp = inp.drop_duplicates()
+               
+                  inp = inp.set_index('t')
+               
+                  inpData = pd.concat([inp,wradii], axis=1)
+               
+                  inpData = inpData.dropna()
+               
+                  inpData = inpData.apply(pd.to_numeric, errors='ignore')
+               
+                  inpData.loc[inpData.penv == -99, 'penv'] = 1010
+               
+                  dph = (inpData.penv - inpData.pcenter) * 100 # convert to KP??????
+               
+                  inpData=inpData.assign(dp=dph)
+               
+                  inpData['time']=inpData.index-inpData.index[0]   
+               
+                  inpData['time']=inpData['time'] / pd.Timedelta('1 hour')
+               
+                  inpData.reset_index(level=0, inplace=True)
+               
+                  inpData=inpData.set_index('time')
+                                          
+                  self.name[ib]=data.STORMNAME.mode()[0].strip()
+                  self.date[ib]=tstamp
+                  self.basin[ib]=data.BASIN[0]
+                  self.data.values=inpData
+            
+                  ib=+1
+                   
