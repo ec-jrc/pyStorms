@@ -29,15 +29,7 @@ A number of Python modules are required. A complete list is available in the fil
 
 No tests are available at the moment.
 
-## Authors
-
-* **George Breyiannis** 
-
-
-## Acknowledgments
-
-* All the people that teach me stuff.  
 
 ## License
-* The project is released under the EUPL 1.1 license. 
+* The project is released under the EUPL 1.2 license. 
 
